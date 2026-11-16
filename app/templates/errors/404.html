@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Página não encontrada · Lunara{% endblock %}
+{% block content %}
+  {% with code=404, title="Essa página se perdeu no ciclo", message="O endereço que você tentou abrir não existe ou mudou de lugar. Respire fundo e volte para o seu painel." %}
+    {% include "errors/_card.html" %}
+  {% endwith %}
+{% endblock %}
+{% block standalone_content %}
+  {% with code=404, title="Essa página se perdeu no ciclo", message="O endereço que você tentou abrir não existe ou mudou de lugar. Respire fundo e volte para o seu painel." %}
+    {% include "errors/_card.html" %}
+  {% endwith %}
+{% endblock %}

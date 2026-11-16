@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Biblioteca · Lunara{% endblock %}
+
+{% block content %}
+<section class="library-hero">
+  <div>
+    <p class="eyebrow">Biblioteca Lunara</p>
+    <h1>Saúde sem tabu,<br><em>no seu tempo.</em></h1>
+    <p>Conteúdo curto e honesto sobre ciclo, fertilidade, gestação e bem-estar. Para ler com calma e conversar com quem cuida de você.</p>
+  </div>
+  <div class="library-art" aria-hidden="true">
+    <span class="library-orb">{{ icons.icon("book", 20) }}</span>
+    <span class="library-leaf leaf-1">{{ icons.icon("leaf", 20) }}</span>
+    <span class="library-leaf leaf-2">{{ icons.icon("sparkles", 20) }}</span>
+  </div>
+</section>
+
+<div class="filter-row">
+  <a class="filter-pill {{ 'active' if not selected }}" href="{{ url_for('views.articles') }}">Todos</a>
+  {% for category in categories %}
+  <a class="filter-pill {{ 'active' if selected == category }}" href="{{ url_for('views.articles', categoria=category) }}">{{ category }}</a>
+  {% endfor %}
+</div>
+
+<div class="article-grid">
+  {% for item in articles %}
+  <a class="article-card" href="{{ url_for('views.article', slug=item.slug) }}">
+    <span class="article-cover cover-{{ loop.index0 % 6 }}">
+      {{ icons.icon(item.emoji, 24) }}
+      <small class="category">{{ item.category }}</small>
+    </span>
+    <span class="article-card-body">
+      <small class="article-meta">{{ item.read_time }} de leitura</small>
+      <h2>{{ item.title }}</h2>
+      <p>{{ item.excerpt }}</p>
+      <span class="article-read">Ler artigo {{ icons.icon("arrow-right", 15) }}</span>
+    </span>
+  </a>
+  {% endfor %}
+</div>
+
+{% if not articles %}
+<div class="empty-state">{{ icons.icon("icon-cycle", 32) }}<p>Nenhum artigo nesta categoria ainda.</p></div>
+{% endif %}
+
+<p class="medical-note">{{ icons.icon("shield", 15) }} A biblioteca tem caráter informativo e educativo. Não substitui consulta, diagnóstico ou tratamento profissional.</p>
+{% endblock %}

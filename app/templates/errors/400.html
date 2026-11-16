@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Algo saiu do ritmo · Lunara{% endblock %}
+{% block content %}
+  {% with code=400, title="Algo saiu do ritmo", message="Não conseguimos entender essa solicitação. Atualize a página e tente novamente." %}
+    {% include "errors/_card.html" %}
+  {% endwith %}
+{% endblock %}
+{% block standalone_content %}
+  {% with code=400, title="Algo saiu do ritmo", message="Não conseguimos entender essa solicitação. Atualize a página e tente novamente." %}
+    {% include "errors/_card.html" %}
+  {% endwith %}
+{% endblock %}

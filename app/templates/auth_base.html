@@ -1,0 +1,75 @@
+{% import "_icons.html" as icons %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Lunara{% endblock %}</title>
+  <meta name="theme-color" content="#3A1C2D">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/favicon.svg') }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="auth-body">
+  <div class="auth-shell">
+    <section class="auth-brand">
+      <div class="auth-brand-top">
+        <a class="brand brand-light" href="{{ url_for('auth.login') }}">
+          <span class="brand-mark">{{ icons.icon("moon", 22) }}</span>
+          <span class="brand-word">lunara</span>
+        </a>
+        <span class="auth-badge"><span class="dot"></span> seu ciclo, do seu jeito</span>
+      </div>
+
+      <div class="auth-copy">
+        <p class="auth-kicker">Um espaço só seu</p>
+        <h1>Escute o seu corpo.<br><em>No seu tempo.</em></h1>
+        <p class="auth-sub">Entenda seu ciclo, registre como se sente e descubra padrões que fazem sentido para você — sem julgamentos e sem ruído.</p>
+        <div class="auth-features">
+          <span>{{ icons.icon("moon", 16) }} Previsões que aprendem com você</span>
+          <span>{{ icons.icon("shield", 16) }} Dados privados no seu MySQL</span>
+          <span>{{ icons.icon("sparkles", 16) }} Feito para instalar no celular</span>
+        </div>
+      </div>
+
+      <div class="auth-art" aria-hidden="true">
+        <div class="orbit orbit-1"></div>
+        <div class="orbit orbit-2"></div>
+        <div class="auth-moon">{{ icons.icon("moon", 52) }}</div>
+        <div class="auth-flower">{{ icons.icon("flower", 26) }}</div>
+        <div class="auth-star auth-star-1">{{ icons.icon("spark", 18) }}</div>
+        <div class="auth-star auth-star-2">{{ icons.icon("spark", 12) }}</div>
+      </div>
+
+      <p class="auth-quote">“Conhecer o próprio ciclo é uma forma de cuidado.”</p>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-panel-inner">
+        <div class="auth-mobile-brand">
+          <span class="brand-mark">{{ icons.icon("moon", 20) }}</span>
+          <span class="brand-word">lunara</span>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <div class="flash-stack">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+              <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+        <p class="auth-legal">Lunara é uma ferramenta de autoconhecimento e não substitui orientação médica. Em caso de dúvidas de saúde, procure um profissional.</p>
+      </div>
+    </section>
+  </div>
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Lunara">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F7A8BE"/>
+      <stop offset="0.52" stop-color="#E0557B"/>
+      <stop offset="1" stop-color="#A94D7F"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#FFFDF9"/>
+      <stop offset="1" stop-color="#FFE8D8"/>
+    </linearGradient>
+    <mask id="crescent">
+      <rect width="64" height="64" fill="#000"/>
+      <circle cx="31" cy="35" r="19" fill="#fff"/>
+      <circle cx="39.5" cy="26.5" r="17" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#bg)"/>
+  <circle cx="17" cy="14" r="14" fill="#fff" opacity="0.10"/>
+  <circle cx="54" cy="52" r="18" fill="#4D2340" opacity="0.10"/>
+  <rect width="64" height="64" fill="url(#moon)" mask="url(#crescent)"/>
+  <path d="M49 12.5c.7 3.6 2.4 5.3 6 6-3.6.7-5.3 2.4-6 6-.7-3.6-2.4-5.3-6-6 3.6-.7 5.3-2.4 6-6z" fill="#FFFDF9" opacity="0.95"/>
+  <circle cx="53" cy="31" r="1.6" fill="#FFFDF9" opacity="0.75"/>
+  <circle cx="14" cy="45" r="1.2" fill="#FFFDF9" opacity="0.55"/>
+</svg>

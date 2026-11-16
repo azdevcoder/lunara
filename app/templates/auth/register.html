@@ -1,0 +1,53 @@
+{% extends "auth_base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Criar conta · Lunara{% endblock %}
+
+{% block content %}
+<div class="auth-form-head">
+  <p class="eyebrow">Comece por você</p>
+  <h2>Crie seu espaço</h2>
+  <p>Leva menos de um minuto. Depois é só ir registrando no seu ritmo.</p>
+</div>
+
+<form method="post" class="auth-form" autocomplete="on">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+  <label class="field">
+    <span class="field-label">Como podemos te chamar?</span>
+    <span class="input-wrap">
+      {{ icons.icon("user", 18) }}
+      <input type="text" name="name" value="{{ name }}" placeholder="Seu nome" required autofocus autocomplete="name" maxlength="120">
+    </span>
+  </label>
+
+  <label class="field">
+    <span class="field-label">E-mail</span>
+    <span class="input-wrap">
+      {{ icons.icon("mail", 18) }}
+      <input type="email" name="email" value="{{ email }}" placeholder="voce@email.com" required autocomplete="email">
+    </span>
+  </label>
+
+  <div class="field-row">
+    <label class="field">
+      <span class="field-label">Senha</span>
+      <span class="input-wrap">
+        {{ icons.icon("lock", 18) }}
+        <input type="password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password" data-password>
+        <button type="button" class="input-action" data-toggle-password aria-label="Mostrar senha">{{ icons.icon("eye", 17) }}</button>
+      </span>
+    </label>
+    <label class="field">
+      <span class="field-label">Confirmar senha</span>
+      <span class="input-wrap">
+        {{ icons.icon("lock", 18) }}
+        <input type="password" name="confirm" placeholder="Repita a senha" required minlength="8" autocomplete="new-password">
+      </span>
+    </label>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-block">Criar minha conta {{ icons.icon("arrow-right", 18) }}</button>
+</form>
+
+<p class="auth-switch">Já tem uma conta? <a href="{{ url_for('auth.login') }}">Entrar</a></p>
+{% endblock %}

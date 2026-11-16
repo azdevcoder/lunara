@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Insights · Lunara{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Padrões com afeto</p>
+    <h1>Seus insights</h1>
+    <p class="page-sub">O que seus registros contam sobre você — sem diagnósticos e sem pressa.</p>
+  </div>
+  <a class="btn btn-soft btn-sm" href="{{ url_for('views.export_csv') }}">{{ icons.icon("download", 16) }} Exportar dados</a>
+</section>
+
+<div class="stat-grid insights-stats">
+  <article class="stat-card">
+    <span class="stat-icon rose">{{ icons.icon("moon", 18) }}</span>
+    <div><p class="stat-label">Ciclo médio</p><p class="stat-value">{{ stats.avg_cycle }} <small>dias</small></p><p class="stat-note">{% set n = stats.cycle_lengths|length %}{% if n %}Último{{ 's' if n != 1 }} {{ n }} ciclo{{ 's' if n != 1 }}{% else %}Aguardando registros{% endif %}</p></div>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon peach">{{ icons.icon("droplet", 18) }}</span>
+    <div><p class="stat-label">Fluxo médio</p><p class="stat-value">{{ stats.avg_period }} <small>dias</small></p><p class="stat-note">{{ stats.episodes|length }} período{{ 's' if stats.episodes|length != 1 }} registrado{{ 's' if stats.episodes|length != 1 }}</p></div>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon lilac">{{ icons.icon("sparkles", 18) }}</span>
+    <div><p class="stat-label">Regularidade</p><p class="stat-value">{{ stats.regularity_score }}<small>/100</small></p><p class="stat-note">{{ stats.regularity }}</p></div>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon aqua">{{ icons.icon("chart", 18) }}</span>
+    <div><p class="stat-label">Variação</p><p class="stat-value">{{ stats.variation }} <small>dias</small></p><p class="stat-note">{{ log_days }} dias registrados</p></div>
+  </article>
+</div>
+
+<div class="insights-grid">
+  <section class="card chart-card span-2">
+    <div class="card-head">
+      <div><p class="eyebrow">Evolução</p><h2>Duração dos seus ciclos</h2></div>
+      <span class="pill soft">média {{ stats.avg_cycle }} dias</span>
+    </div>
+    {% if chart_cycles %}
+    <div class="cycle-chart" style="--max: {{ max_cycle }}">
+      {% for row in chart_cycles %}
+      <div class="cycle-bar-wrap">
+        <span class="cycle-value">{{ row.cycle_length }}d</span>
+        <div class="cycle-bar" style="height: {{ (row.cycle_length / max_cycle * 100)|round|int }}%"></div>
+        <span class="cycle-month">{{ row.start|date_pt }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="chart-note">
+      <span>{{ icons.icon("sparkles", 15) }}</span>
+      {% if stats.cycle_lengths|length >= 3 %}
+        Seus ciclos variam {{ stats.variation }} dia{{ 's' if stats.variation != 1 }} entre o mais curto e o mais longo. Variações de até 7 dias são comuns.
+      {% else %}
+        Registre mais ciclos para enxergar sua evolução com mais clareza.
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state small">{{ icons.icon("sleep", 20) }}<p>Seus ciclos vão aparecer aqui conforme você registra.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="card chart-card">
+    <div class="card-head">
+      <div><p class="eyebrow">Últimos 120 dias</p><h2>Sintomas frequentes</h2></div>
+    </div>
+    {% if symptoms %}
+    <div class="rank-list">
+      {% for item in symptoms %}
+      <div class="rank-item">
+        <div class="rank-body">
+          <div class="rank-label"><strong>{{ item.label }}</strong><span>{{ item.count }}×</span></div>
+          <div class="rank-track"><span style="width: {{ (item.count / max_symptom * 100)|round|int }}%"></span></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state small">{{ icons.icon("flower", 20) }}<p>Nenhum sintoma registrado nos últimos meses.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="card chart-card">
+    <div class="card-head">
+      <div><p class="eyebrow">Como você se sentiu</p><h2>Humores</h2></div>
+    </div>
+    {% if moods %}
+    <div class="mood-chart">
+      {% for item in moods %}
+      <div class="mood-chart-row">
+        <span class="mood-chart-label">{{ item.label }}</span>
+        <div class="mood-chart-track"><span style="width: {{ (item.count / max_mood * 100)|round|int }}%"></span></div>
+        <span class="mood-chart-count">{{ item.count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state small">{{ icons.icon("heart", 20) }}<p>Registre seu humor para descobrir padrões.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="card chart-card">
+    <div class="card-head">
+      <div><p class="eyebrow">Hidratação e descanso</p><h2>Médias do período</h2></div>
+    </div>
+    <div class="wellness-grid">
+      <div class="wellness-tile">
+        <span class="stat-icon lilac">{{ icons.icon("moon", 18) }}</span>
+        <strong>{{ avg_sleep or '—' }}{% if avg_sleep %}h{% endif %}</strong>
+        <small>sono por noite</small>
+      </div>
+      <div class="wellness-tile">
+        <span class="stat-icon aqua">{{ icons.icon("water", 18) }}</span>
+        <strong>{{ avg_water or '—' }}{% if avg_water %}ml{% endif %}</strong>
+        <small>água por dia</small>
+      </div>
+      <div class="wellness-tile">
+        <span class="stat-icon rose">{{ icons.icon("heart", 18) }}</span>
+        <strong>{{ symptom_days }}</strong>
+        <small>dias com sintomas</small>
+      </div>
+    </div>
+    {% if weight_values %}
+    <div class="weight-mini">
+      <span class="field-label">Peso recente</span>
+      <div class="sparkline">
+        {% for log in weight_values %}
+        <span style="height: {{ (log.weight_kg % 20) / 20 * 100 }}%" title="{{ log.weight_kg }} kg em {{ log.log_date|date_pt }}"></span>
+        {% endfor %}
+      </div>
+      <small>Último: {{ weight_values[-1].weight_kg }} kg em {{ weight_values[-1].log_date|date_pt }}</small>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="card history-card span-2">
+    <div class="card-head">
+      <div><p class="eyebrow">Histórico</p><h2>Seus ciclos</h2></div>
+      {% if stats.current_start %}<span class="pill soft">atual desde {{ stats.current_start|date_pt }}</span>{% endif %}
+    </div>
+    {% if history %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Início</th><th>Fim do fluxo</th><th>Duração do fluxo</th><th>Duração do ciclo</th></tr></thead>
+        <tbody>
+          {% for row in history %}
+          <tr>
+            <td data-label="Início"><strong>{{ row.start|date_pt }}</strong></td>
+            <td data-label="Fim do fluxo">{{ row.end|date_pt }}</td>
+            <td data-label="Duração do fluxo">{{ row.period_length }} dias</td>
+            <td data-label="Duração do ciclo">{% if row.cycle_length %}{{ row.cycle_length }} dias{% else %}<span class="muted-text">em andamento</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state small">{{ icons.icon("icon-cycle", 20) }}<p>Nenhum ciclo completo registrado ainda.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="card chart-card span-2 regularity-card">
+    <div class="regularity-visual">
+      <div class="regularity-ring" style="--score: {{ stats.regularity_score }}">
+        <span>{{ stats.regularity_score }}</span><small>/100</small>
+      </div>
+      <div>
+        <p class="eyebrow">Leitura do seu padrão</p>
+        <h2>{{ stats.regularity }}</h2>
+        <p>
+          {% if stats.cycle_lengths|length < 2 %}
+            Ainda estamos conhecendo seu ciclo. Com mais registros, esta leitura fica mais precisa.
+          {% elif stats.regularity_score >= 80 %}
+            Seus ciclos têm duração consistente. Continue registrando para manter as previsões afiadas.
+          {% elif stats.regularity_score >= 60 %}
+            Há uma variação moderada entre seus ciclos. Isso pode acontecer por sono, estresse, viagens e mudanças de rotina.
+          {% else %}
+            Seus ciclos variam bastante. Vale observar por alguns meses e conversar com um profissional se isso te preocupar.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<p class="medical-note">{{ icons.icon("shield", 15) }} Os insights são gerados a partir dos seus registros e não substituem avaliação médica. Se algo parecer diferente, procure um profissional de saúde.</p>
+{% endblock %}

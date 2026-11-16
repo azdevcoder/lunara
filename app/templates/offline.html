@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Sem conexão · Lunara{% endblock %}
+{% block content %}
+  <div class="error-card">
+    <span class="error-code">offline</span>
+    <h1>Você está sem conexão</h1>
+    <p>Seus registros continuam guardados. Assim que a internet voltar, é só recarregar esta página.</p>
+    <div class="error-actions">
+      <button class="btn btn-primary" onclick="window.location.reload()">Tentar novamente</button>
+      <a class="btn btn-ghost" href="{{ url_for('views.home') }}">Início</a>
+    </div>
+  </div>
+{% endblock %}
+{% block standalone_content %}
+  <div class="error-card">
+    <span class="error-code">offline</span>
+    <h1>Você está sem conexão</h1>
+    <p>Seus registros continuam guardados. Assim que a internet voltar, é só recarregar esta página.</p>
+    <div class="error-actions">
+      <button class="btn btn-primary" onclick="window.location.reload()">Tentar novamente</button>
+      <a class="btn btn-ghost" href="{{ url_for('views.home') }}">Início</a>
+    </div>
+  </div>
+{% endblock %}

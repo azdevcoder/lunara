@@ -1,0 +1,144 @@
+{% import "_icons.html" as icons %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Lunara{% endblock %}</title>
+  <meta name="description" content="Lunara — seu ciclo, seus dados, seu ritmo.">
+  <meta name="theme-color" content="#E0557B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Lunara">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/favicon.svg') }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="theme-{{ current_user.theme if current_user else 'rose' }} {% block body_class %}{% endblock %}" data-reminder-time="{{ current_user.reminder_time if current_user else '09:00' }}" data-reminders-enabled="{{ 'true' if current_user and current_user.notifications_enabled else 'false' }}">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  {% if current_user and current_user.onboarding_done %}
+  <div class="shell">
+    <aside class="sidebar">
+      <a class="brand" href="{{ url_for('views.home') }}">
+        <span class="brand-mark">{{ icons.icon("moon", 22) }}</span>
+        <span class="brand-word">lunara</span>
+      </a>
+
+      <nav class="side-nav" aria-label="Navegação principal">
+        <p class="nav-label">Seu espaço</p>
+        <a class="nav-item {{ 'active' if request.endpoint == 'views.home' }}" href="{{ url_for('views.home') }}">
+          {{ icons.icon("home", 19) }} <span>Hoje</span>
+        </a>
+        <a class="nav-item {{ 'active' if request.endpoint in ['views.calendar_view', 'views.log_day'] }}" href="{{ url_for('views.calendar_view') }}">
+          {{ icons.icon("calendar", 19) }} <span>Calendário</span>
+        </a>
+        <a class="nav-item {{ 'active' if request.endpoint == 'views.insights' }}" href="{{ url_for('views.insights') }}">
+          {{ icons.icon("chart", 19) }} <span>Insights</span>
+        </a>
+
+        <p class="nav-label nav-label-gap">Saúde</p>
+        <a class="nav-item {{ 'active' if request.endpoint in ['views.articles', 'views.article'] }}" href="{{ url_for('views.articles') }}">
+          {{ icons.icon("book", 19) }} <span>Biblioteca</span>
+        </a>
+        <a class="nav-item {{ 'active' if request.endpoint == 'views.pregnancy' }}" href="{{ url_for('views.pregnancy') }}">
+          {{ icons.icon("baby", 19) }} <span>Gestação</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-card">
+        <span class="sidebar-card-icon">{{ icons.icon("shield", 18) }}</span>
+        <p><strong>Seu espaço é privado.</strong> Os dados ficam no seu banco MySQL, sem anúncios e sem compartilhamento.</p>
+      </div>
+
+      <a class="sidebar-user" href="{{ url_for('views.profile') }}">
+        <span class="avatar">{{ current_user.initials() }}</span>
+        <span class="sidebar-user-info">
+          <strong>{{ current_user.first_name() }}</strong>
+          <small>Ver perfil</small>
+        </span>
+        {{ icons.icon("chevron-right", 16) }}
+      </a>
+
+      <form method="post" action="{{ url_for('auth.logout') }}" class="sidebar-logout">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button type="submit" class="link-btn">{{ icons.icon("logout", 16) }} Sair</button>
+      </form>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <a class="brand brand-mobile" href="{{ url_for('views.home') }}">
+          <span class="brand-mark">{{ icons.icon("moon", 19) }}</span>
+          <span class="brand-word">lunara</span>
+        </a>
+        <span class="topbar-date">{{ today()|date_pt("full") }}</span>
+        <div class="topbar-actions">
+          <button class="icon-btn install-btn" type="button" data-install hidden title="Instalar Lunara">
+            {{ icons.icon("download", 18) }}
+          </button>
+          <a class="avatar avatar-sm" href="{{ url_for('views.profile') }}">{{ current_user.initials() }}</a>
+        </div>
+      </header>
+
+      <main class="page">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <div class="flash-stack" role="status">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+              <span class="flash-icon">{{ icons.icon("check" if category == "success" else "alert", 17) }}</span>
+              <span>{{ message }}</span>
+              <button type="button" class="flash-close" data-dismiss aria-label="Fechar">{{ icons.icon("close", 15) }}</button>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <nav class="tabbar" aria-label="Navegação">
+    <a class="tab {{ 'active' if request.endpoint == 'views.home' }}" href="{{ url_for('views.home') }}">
+      {{ icons.icon("home", 21) }}<span>Hoje</span>
+    </a>
+    <a class="tab {{ 'active' if request.endpoint in ['views.calendar_view', 'views.log_day'] }}" href="{{ url_for('views.calendar_view') }}">
+      {{ icons.icon("calendar", 21) }}<span>Calendário</span>
+    </a>
+    <a class="tab-fab" href="{{ url_for('views.log_day', day_value=today().isoformat()) }}" aria-label="Registrar hoje">
+      {{ icons.icon("plus", 24) }}
+    </a>
+    <a class="tab {{ 'active' if request.endpoint == 'views.insights' }}" href="{{ url_for('views.insights') }}">
+      {{ icons.icon("chart", 21) }}<span>Insights</span>
+    </a>
+    <a class="tab {{ 'active' if request.endpoint == 'views.profile' }}" href="{{ url_for('views.profile') }}">
+      {{ icons.icon("user", 21) }}<span>Perfil</span>
+    </a>
+  </nav>
+  {% else %}
+  <main class="standalone">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-stack standalone-flash">
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}"><span>{{ message }}</span></div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+    {% block standalone_content %}{% endblock %}
+  </main>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

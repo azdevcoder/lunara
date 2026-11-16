@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Perfil · Lunara{% endblock %}
+
+{% block content %}
+{% set ns = namespace(goal_label='Meu ciclo') %}
+{% for key, label, emoji, desc in goals %}
+  {% if key == current_user.goal %}{% set ns.goal_label = label %}{% endif %}
+{% endfor %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Seu espaço</p>
+    <h1>Perfil e ajustes</h1>
+    <p class="page-sub">Tudo do seu jeito. Você pode mudar isso quando quiser.</p>
+  </div>
+  <form method="post" action="{{ url_for('auth.logout') }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button class="btn btn-ghost btn-sm" type="submit">{{ icons.icon("logout", 16) }} Sair</button>
+  </form>
+</section>
+
+<section class="profile-hero card">
+  <div class="profile-identity">
+    <span class="avatar avatar-xl">{{ current_user.initials() }}</span>
+    <div>
+      <h2>{{ current_user.name }}</h2>
+      <p>{{ current_user.email }}</p>
+      <span class="pill soft">{{ ns.goal_label }}</span>
+    </div>
+  </div>
+  <div class="profile-stats">
+    <div><strong>{{ stats.episodes|length }}</strong><span>ciclos</span></div>
+    <div><strong>{{ total_logs }}</strong><span>registros</span></div>
+    <div><strong>{{ current_user.cycle_length }}</strong><span>dias médios</span></div>
+  </div>
+</section>
+
+<section class="card theme-card">
+  <div class="card-head">
+    <div><p class="eyebrow">Aparência</p><h2>Escolha seu clima</h2></div>
+    <span class="muted-text small">Aplicado na hora</span>
+  </div>
+  <div class="theme-grid">
+    {% for key, label, colors in [("rose", "Rosé", ["#E0557B", "#F7C9B6", "#FFF5F7"]), ("lavender", "Lavanda", ["#8C6BC8", "#D9C8F5", "#F8F5FF"]), ("sage", "Sálvia", ["#5E8B7E", "#C9DED4", "#F4FAF7"]), ("midnight", "Meia-noite", ["#F08BA9", "#6B4A78", "#241A2C"])] %}
+    <form method="post">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="theme">
+      <input type="hidden" name="theme" value="{{ key }}">
+      <button type="submit" class="theme-option {{ 'active' if current_user.theme == key }}">
+        <span class="theme-swatch" style="--sw1: {{ colors[0] }}; --sw2: {{ colors[1] }}; --sw3: {{ colors[2] }}"></span>
+        <span>{{ label }}</span>
+        {% if current_user.theme == key %}<span class="theme-check">{{ icons.icon("check", 13) }}</span>{% endif %}
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="settings-grid">
+  <section class="card settings-card">
+    <div class="settings-head">
+      <span class="stat-icon rose">{{ icons.icon("user", 18) }}</span>
+      <div><h2>Seus dados</h2><p>Como o app fala com você.</p></div>
+    </div>
+    <form method="post" class="settings-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="profile">
+      <label class="field"><span class="field-label">Nome</span><input type="text" name="name" value="{{ current_user.name }}" required maxlength="120"></label>
+      <label class="field"><span class="field-label">E-mail</span><input type="email" name="email" value="{{ current_user.email }}" required></label>
+      <div class="field-row">
+        <label class="field"><span class="field-label">Nascimento</span><input type="date" name="birth_date" value="{{ current_user.birth_date.isoformat() if current_user.birth_date else '' }}" max="{{ today().isoformat() }}"></label>
+        <label class="field"><span class="field-label">Objetivo</span>
+          <select name="goal">
+            {% for key, label, emoji, desc in goals %}
+            <option value="{{ key }}" {{ 'selected' if current_user.goal == key }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <button class="btn btn-primary btn-sm" type="submit">Salvar dados</button>
+    </form>
+  </section>
+
+  <section class="card settings-card">
+    <div class="settings-head">
+      <span class="stat-icon peach">{{ icons.icon("moon", 18) }}</span>
+      <div><h2>Seu ciclo</h2><p>Ajuste as bases das previsões.</p></div>
+      <a class="mini-btn cycle-new-link" href="{{ url_for('views.new_cycle') }}">Novo ciclo</a>
+    </div>
+    <form method="post" class="settings-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="cycle">
+      <div class="field-row">
+        <label class="field"><span class="field-label">Ciclo médio</span>
+          <select name="cycle_length">
+            {% for value in range(21, 46) %}<option value="{{ value }}" {{ 'selected' if current_user.cycle_length == value }}>{{ value }} dias</option>{% endfor %}
+          </select>
+        </label>
+        <label class="field"><span class="field-label">Duração do fluxo</span>
+          <select name="period_length">
+            {% for value in range(2, 11) %}<option value="{{ value }}" {{ 'selected' if current_user.period_length == value }}>{{ value }} dias</option>{% endfor %}
+          </select>
+        </label>
+      </div>
+      <label class="field"><span class="field-label">Primeiro dia da última menstruação</span><input type="date" name="last_period_start" value="{{ current_user.last_period_start.isoformat() if current_user.last_period_start else '' }}" max="{{ today().isoformat() }}"></label>
+      <label class="check-field compact-check">
+        <input type="checkbox" name="seed_period" checked>
+        <span class="check-box">{{ icons.icon("check", 13) }}</span>
+        <span><strong>Criar registros de fluxo</strong><small>Preenche os dias do período, sem sobrescrever o que já existe.</small></span>
+      </label>
+      <button class="btn btn-primary btn-sm" type="submit">Atualizar ciclo</button>
+    </form>
+  </section>
+
+  <section class="card settings-card">
+    <div class="settings-head">
+      <span class="stat-icon lilac">{{ icons.icon("bell", 18) }}</span>
+      <div><h2>Lembretes</h2><p>Um toque de cuidado na rotina.</p></div>
+    </div>
+    <form method="post" class="settings-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="reminders">
+      <label class="switch-row">
+        <span><strong>Lembretes diários</strong><small>Registrar o dia e tomar o contraceptivo.</small></span>
+        <span class="switch"><input type="checkbox" name="notifications_enabled" {{ 'checked' if current_user.notifications_enabled }}><span class="switch-track"></span></span>
+      </label>
+      <label class="field"><span class="field-label">Horário do lembrete</span><input type="time" name="reminder_time" value="{{ current_user.reminder_time or '09:00' }}"></label>
+      <p class="field-hint">O Lunara pede permissão de notificação no celular. Funciona melhor com o app instalado.</p>
+      <button class="btn btn-primary btn-sm" type="submit">Salvar lembretes</button>
+    </form>
+  </section>
+
+  <section class="card settings-card">
+    <div class="settings-head">
+      <span class="stat-icon aqua">{{ icons.icon("pill", 18) }}</span>
+      <div><h2>Contraceptivo</h2><p>Para não esquecer a pílula.</p></div>
+    </div>
+    <form method="post" class="settings-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="contraceptive">
+      <label class="field"><span class="field-label">Nome do método</span><input type="text" name="contraceptive" value="{{ current_user.contraceptive or '' }}" placeholder="Ex.: pílula combinada"></label>
+      <label class="field"><span class="field-label">Horário habitual</span><input type="time" name="contraceptive_time" value="{{ current_user.contraceptive_time or '21:00' }}"></label>
+      <button class="btn btn-primary btn-sm" type="submit">Salvar método</button>
+    </form>
+  </section>
+
+  <section class="card settings-card">
+    <div class="settings-head">
+      <span class="stat-icon rose">{{ icons.icon("baby", 18) }}</span>
+      <div><h2>Modo gestação</h2><p>Acompanhe semanas e tamanho do bebê.</p></div>
+    </div>
+    <form method="post" class="settings-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="pregnancy">
+      <label class="switch-row">
+        <span><strong>Ativar modo gestação</strong><small>Substitui as previsões de ciclo na tela inicial.</small></span>
+        <span class="switch"><input type="checkbox" name="pregnancy_mode" {{ 'checked' if current_user.pregnancy_mode }}><span class="switch-track"></span></span>
+      </label>
+      <label class="field"><span class="field-label">Data provável do parto</span><input type="date" name="due_date" value="{{ current_user.due_date.isoformat() if current_user.due_date else '' }}"></label>
+      <button class="btn btn-primary btn-sm" type="submit">Salvar gestação</button>
+    </form>
+  </section>
+
+  <section class="card settings-card">
+    <div class="settings-head">
+      <span class="stat-icon peach">{{ icons.icon("lock", 18) }}</span>
+      <div><h2>Segurança</h2><p>Troque sua senha quando precisar.</p></div>
+    </div>
+    <form method="post" class="settings-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="password">
+      <label class="field"><span class="field-label">Senha atual</span><input type="password" name="current_password" required autocomplete="current-password"></label>
+      <div class="field-row">
+        <label class="field"><span class="field-label">Nova senha</span><input type="password" name="new_password" required minlength="8" autocomplete="new-password"></label>
+        <label class="field"><span class="field-label">Confirmar</span><input type="password" name="confirm_password" required minlength="8" autocomplete="new-password"></label>
+      </div>
+      <button class="btn btn-primary btn-sm" type="submit">Alterar senha</button>
+    </form>
+  </section>
+</div>
+
+<div class="settings-grid lower-grid">
+  <section class="card settings-card">
+    <div class="settings-head">
+      <span class="stat-icon lilac">{{ icons.icon("download", 18) }}</span>
+      <div><h2>Seus dados, suas regras</h2><p>Baixe tudo o que você registrou.</p></div>
+    </div>
+    <p class="muted-text">Exporte para levar ao médico, guardar um backup ou simplesmente ter a liberdade de ir embora quando quiser.</p>
+    <div class="btn-row">
+      <a class="btn btn-soft btn-sm" href="{{ url_for('views.export_csv') }}">{{ icons.icon("download", 16) }} CSV</a>
+      <a class="btn btn-soft btn-sm" href="{{ url_for('views.export_json') }}">{{ icons.icon("download", 16) }} JSON</a>
+    </div>
+  </section>
+
+  <section class="card settings-card install-card">
+    <div class="settings-head">
+      <span class="stat-icon aqua">{{ icons.icon("sparkles", 18) }}</span>
+      <div><h2>Instale no celular</h2><p>Abra como um app, com ícone na tela inicial.</p></div>
+    </div>
+    <p class="muted-text">No iPhone, toque em Compartilhar → Adicionar à Tela de Início. No Android, use o menu do navegador ou o botão abaixo.</p>
+    <button class="btn btn-primary btn-sm" type="button" data-install>Instalar Lunara</button>
+  </section>
+</div>
+
+<section class="card danger-card">
+  <div>
+    <h2>{{ icons.icon("alert", 18) }} Apagar minha conta</h2>
+    <p>Remove permanentemente seu perfil e todos os registros. Essa ação não pode ser desfeita.</p>
+  </div>
+  <details class="danger-details">
+    <summary class="btn btn-ghost btn-sm danger">Apagar conta</summary>
+    <form method="post" class="danger-form" onsubmit="return confirm('Tem certeza absoluta? Todos os dados serão apagados.')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="delete">
+      <label class="field"><span class="field-label">Digite EXCLUIR para confirmar</span><input type="text" name="confirmation" required placeholder="EXCLUIR"></label>
+      <label class="field"><span class="field-label">Sua senha</span><input type="password" name="confirm_password" required></label>
+      <button class="btn btn-danger btn-sm" type="submit">Apagar tudo permanentemente</button>
+    </form>
+  </details>
+</section>
+{% endblock %}

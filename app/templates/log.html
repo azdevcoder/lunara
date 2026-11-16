@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}{{ day|date_pt("long") }} · Lunara{% endblock %}
+
+{% block content %}
+<div class="log-head">
+  <a class="back-link" href="{{ url_for('views.calendar_view', mes=day.strftime('%Y-%m')) }}">{{ icons.icon("arrow-left", 17) }} Calendário</a>
+  <div class="log-title-row">
+    <div>
+      <p class="eyebrow">{{ day|date_pt("weekday")|capitalize }}{% if day == today() %} · hoje{% endif %}</p>
+      <h1>{{ day|date_pt("long") }}</h1>
+      <p class="page-sub">Registre o que fizer sentido. Nenhum campo é obrigatório.</p>
+    </div>
+    <div class="log-day-nav">
+      <a class="icon-btn" href="{{ url_for('views.log_day', day_value=(day - timedelta(days=1)).isoformat()) }}" aria-label="Dia anterior">{{ icons.icon("chevron-left", 18) }}</a>
+      {% if day < today() %}
+      <a class="icon-btn" href="{{ url_for('views.log_day', day_value=(day + timedelta(days=1)).isoformat()) }}" aria-label="Próximo dia">{{ icons.icon("chevron-right", 18) }}</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<form method="post" class="log-form" id="log-form">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+  <section class="card log-section" id="fluxo">
+    <div class="section-head">
+      <span class="section-number">01</span>
+      <div><h2>Fluxo menstrual</h2><p>Como está o sangramento hoje?</p></div>
+    </div>
+    <div class="flow-options">
+      {% for key, label, visual in flow_options %}
+      <label class="flow-option {{ 'selected' if (log.flow if log and log.flow else 'none') == key }}">
+        <input type="radio" name="flow" value="{{ key }}" {{ 'checked' if (log.flow if log and log.flow else 'none') == key }}>
+        <span class="flow-visual flow-{{ key }}">{{ icons.icon("droplet", 20) }}</span>
+        <span>{{ label }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card log-section" id="humor">
+    <div class="section-head">
+      <span class="section-number">02</span>
+      <div><h2>Humor</h2><p>Pode escolher mais de um. Sem certo ou errado.</p></div>
+    </div>
+    <div class="mood-picker">
+      {% for key, label, emoji in moods %}
+      <label class="mood-option">
+        <input type="checkbox" name="moods" value="{{ key }}" {{ 'checked' if log and key in log.mood_list() }}>
+        <span>{{ label }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card log-section" id="sintomas">
+    <div class="section-head">
+      <span class="section-number">03</span>
+      <div><h2>Sintomas</h2><p>Marque tudo o que sentir agora.</p></div>
+    </div>
+    <div class="symptom-picker">
+      {% for key, label, emoji in symptoms %}
+      <label class="symptom-option">
+        <input type="checkbox" name="symptoms" value="{{ key }}" {{ 'checked' if log and key in log.symptom_list() }}>
+        {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card log-section" id="bemestar">
+    <div class="section-head">
+      <span class="section-number">04</span>
+      <div><h2>Bem-estar</h2><p>Energia, sono e hidratação do dia.</p></div>
+    </div>
+
+    <div class="energy-row">
+      <span class="field-label">Nível de energia</span>
+      <div class="energy-picker">
+        {% for value, label in [(1, "Exausta"), (2, "Baixa"), (3, "Ok"), (4, "Boa"), (5, "Ótima")] %}
+        <label class="energy-option">
+          <input type="radio" name="energy" value="{{ value }}" {{ 'checked' if log and log.energy == value }}>
+          <span>{{ icons.icon("energy-" ~ value, 16) }}</span><small>{{ label }}</small>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="input-grid">
+      <label class="field">
+        <span class="field-label">{{ icons.icon("moon", 15) }} Horas de sono</span>
+        <span class="input-wrap"><input type="number" name="sleep_hours" value="{{ log.sleep_hours if log and log.sleep_hours is not none else '' }}" min="0" max="24" step="0.5" placeholder="8"></span>
+      </label>
+      <label class="field">
+        <span class="field-label">{{ icons.icon("water", 15) }} Água (ml)</span>
+        <span class="input-wrap"><input type="number" name="water_ml" value="{{ log.water_ml if log and log.water_ml is not none else '' }}" min="0" max="6000" step="50" placeholder="2000"></span>
+      </label>
+      <label class="field">
+        <span class="field-label">{{ icons.icon("scale", 15) }} Peso (kg)</span>
+        <span class="input-wrap"><input type="number" name="weight_kg" value="{{ log.weight_kg if log and log.weight_kg is not none else '' }}" min="20" max="300" step="0.1" placeholder="—"></span>
+      </label>
+      <label class="field">
+        <span class="field-label">{{ icons.icon("temperature", 15) }} Temperatura (°C)</span>
+        <span class="input-wrap"><input type="number" name="temperature" value="{{ log.temperature if log and log.temperature is not none else '' }}" min="34" max="42" step="0.05" placeholder="36.5"></span>
+      </label>
+    </div>
+  </section>
+
+  <section class="card log-section" id="corpo">
+    <div class="section-head">
+      <span class="section-number">05</span>
+      <div><h2>Corpo e rotina</h2><p>Opcional, mas ajuda a enxergar padrões.</p></div>
+    </div>
+
+    <div class="input-grid">
+      <label class="field">
+        <span class="field-label">Relação sexual</span>
+        <span class="input-wrap">
+          <select name="sex">
+            {% for key, label in sex_options %}
+            <option value="{{ key }}" {{ 'selected' if log and (log.sex or '') == key }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </label>
+      <label class="field">
+        <span class="field-label">Secreção vaginal</span>
+        <span class="input-wrap">
+          <select name="discharge">
+            {% for key, label in discharge_options %}
+            <option value="{{ key }}" {{ 'selected' if log and (log.discharge or '') == key }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </label>
+      <label class="field">
+        <span class="field-label">Desejos alimentares</span>
+        <span class="input-wrap"><input type="text" name="cravings" value="{{ log.cravings or '' if log else '' }}" placeholder="Doce, salgado, café..."></span>
+      </label>
+      <label class="field">
+        <span class="field-label">Exercício</span>
+        <span class="input-wrap"><input type="text" name="exercise" value="{{ log.exercise or '' if log else '' }}" placeholder="Caminhada, yoga, musculação..."></span>
+      </label>
+      <label class="field">
+        <span class="field-label">Medicação</span>
+        <span class="input-wrap"><input type="text" name="medication" value="{{ log.medication or '' if log else '' }}" placeholder="Nome e dose, se quiser"></span>
+      </label>
+      <label class="check-field">
+        <input type="checkbox" name="pill_taken" {{ 'checked' if log and log.pill_taken }}>
+        <span class="check-box">{{ icons.icon("check", 14) }}</span>
+        <span><strong>Tomei meu contraceptivo</strong><small>{{ current_user.contraceptive or 'Pílula, anel ou outro método oral' }}</small></span>
+      </label>
+    </div>
+  </section>
+
+  <section class="card log-section" id="notas">
+    <div class="section-head">
+      <span class="section-number">06</span>
+      <div><h2>Notas livres</h2><p>Um espaço para o que não cabe em checkboxes.</p></div>
+    </div>
+    <textarea name="notes" class="textarea" rows="5" placeholder="Como foi seu dia? Algo que quer lembrar depois...">{{ log.notes or '' if log else '' }}</textarea>
+  </section>
+
+  <div class="save-bar">
+    <a class="btn btn-ghost" href="{{ url_for('views.home') }}">Cancelar</a>
+    <button type="submit" class="btn btn-primary">{{ icons.icon("check", 18) }} Salvar registro</button>
+  </div>
+</form>
+
+{% if log %}
+<div class="log-danger">
+  <form method="post" action="{{ url_for('views.delete_log', day_value=day.isoformat()) }}" data-confirm="Remover o registro deste dia? Essa ação não pode ser desfeita.">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button type="submit" class="link-btn danger">{{ icons.icon("trash", 15) }} Remover registro deste dia</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

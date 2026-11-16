@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Gestação · Lunara{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Modo gestação</p>
+    <h1>Uma vida crescendo</h1>
+    <p class="page-sub">Cada semana é uma descoberta. Vá com calma.</p>
+  </div>
+  {% if info %}
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="due_date" value="{{ current_user.due_date.isoformat() }}">
+    <button class="btn btn-ghost btn-sm" type="submit">Atualizar dados</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if info %}
+<section class="pregnancy-hero card">
+  <div class="pregnancy-copy">
+    <span class="pill soft">{{ info.trimester }}º trimestre</span>
+    <h2>{{ info.weeks }} semanas <span>e {{ info.days }} dia{{ 's' if info.days != 1 }}</span></h2>
+    <p>Seu bebê está do tamanho de {{ info.size.name }} — cerca de {{ info.size.cm }} cm. Faltam {{ info.remaining }} dias para o grande encontro.</p>
+    <div class="pregnancy-meta">
+      <span>{{ icons.icon("calendar", 16) }} DPP {{ current_user.due_date|date_pt("long") }}</span>
+      <span>{{ icons.icon("heart", 16) }} {{ info.progress }}% da gestação</span>
+    </div>
+    <div class="pregnancy-progress"><span style="width: {{ info.progress }}%"></span></div>
+  </div>
+  <div class="pregnancy-orb large">
+    <span class="pregnancy-orb-emoji">{{ icons.icon(info.size.emoji, 34) }}</span>
+    <span class="pregnancy-orb-label">{{ info.size.name }}</span>
+    <span class="pregnancy-orb-size">{{ info.size.cm }} cm</span>
+  </div>
+</section>
+
+<div class="pregnancy-grid">
+  <section class="card">
+    <div class="card-head">
+      <div><p class="eyebrow">Semana a semana</p><h2>Sua jornada</h2></div>
+      <span class="pill soft">semana {{ info.weeks }}</span>
+    </div>
+    <div class="pregnancy-weeks">
+      {% for item in weeks %}
+      <div class="pregnancy-week {{ 'current' if item.current }}">
+        <span class="pregnancy-week-num">{{ item.week }}</span>
+        <span class="pregnancy-week-info"><strong>{{ item.size.name }}</strong><small>{{ item.size.cm }} cm · semana {{ item.week }}</small></span>
+        {% if item.current %}<span class="pill soft">agora</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <aside class="pregnancy-aside">
+    <section class="card aside-card">
+      <div class="card-head compact"><h2>Para esta semana</h2></div>
+      <ul class="tip-list">
+        <li><span>{{ icons.icon("droplet", 15) }}</span> Beba água ao longo do dia e observe a cor da urina.</li>
+        <li><span>{{ icons.icon("salad", 15) }}</span> Priorize ferro, cálcio, folato e proteínas — sem dietas restritivas.</li>
+        <li><span>{{ icons.icon("walk", 15) }}</span> Movimento leve costuma ajudar no sono e no humor.</li>
+        <li><span>{{ icons.icon("stethoscope", 15) }}</span> Mantenha as consultas de pré-natal em dia.</li>
+        <li><span>{{ icons.icon("sleep", 15) }}</span> Descanse quando o corpo pedir. Não precisa dar conta de tudo.</li>
+      </ul>
+    </section>
+    <section class="card aside-card">
+      <div class="card-head compact"><h2>Registre seu dia</h2></div>
+      <p class="muted-text">Sono, humor, água e sintomas também importam na gestação.</p>
+      <a class="btn btn-primary btn-block btn-sm" href="{{ url_for('views.log_day', day_value=today().isoformat()) }}">Abrir registro de hoje</a>
+    </section>
+    <section class="card aside-card">
+      <span class="quote-mark">“</span>
+      <p>Você não precisa saber tudo hoje. Só precisa se permitir sentir.</p>
+      <small>Lembrete Lunara</small>
+    </section>
+  </aside>
+</div>
+
+<p class="medical-note">{{ icons.icon("shield", 15) }} As semanas e o tamanho são estimativas. Acompanhe o desenvolvimento com seu pré-natal e confirme as datas com o profissional que te acompanha.</p>
+
+{% else %}
+<div class="pregnancy-empty">
+  <section class="card">
+    <span class="pregnancy-empty-emoji">{{ icons.icon("seedling", 34) }}</span>
+    <h2>Vamos acompanhar sua gestação?</h2>
+    <p>Informe a data provável do parto (DPP) ou o primeiro dia da sua última menstruação. O Lunara calcula as semanas, o trimestre e o tamanho aproximado do bebê.</p>
+    <form method="post" class="pregnancy-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <label class="field"><span class="field-label">Data provável do parto (DPP)</span><input type="date" name="due_date" value="{{ current_user.due_date.isoformat() if current_user.due_date else '' }}"></label>
+      <span class="or-sep">ou</span>
+      <label class="field"><span class="field-label">Primeiro dia da última menstruação</span><input type="date" name="last_period" max="{{ today().isoformat() }}"></label>
+      <button class="btn btn-primary" type="submit">Ativar modo gestação {{ icons.icon("arrow-right", 17) }}</button>
+    </form>
+    <p class="field-hint">Você pode desativar quando quiser no seu perfil.</p>
+  </section>
+  <aside class="card pregnancy-empty-aside">
+    <h3>O que você encontra aqui</h3>
+    <ul class="pregnancy-list">
+      <li><span>{{ icons.icon("calendar", 15) }}</span> Semanas e trimestre calculados</li>
+      <li><span>{{ icons.icon("apple", 15) }}</span> Comparação de tamanho do bebê</li>
+      <li><span>{{ icons.icon("heart", 15) }}</span> Lembretes de autocuidado</li>
+      <li><span>{{ icons.icon("book", 15) }}</span> Registro de sintomas e humor</li>
+    </ul>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}

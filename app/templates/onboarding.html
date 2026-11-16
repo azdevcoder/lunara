@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Vamos conhecer você · Lunara{% endblock %}
+{% block body_class %}onboarding-body{% endblock %}
+
+{% block standalone_content %}
+<div class="onboarding">
+  <section class="onboarding-intro">
+    <a class="brand" href="{{ url_for('views.home') }}">
+      <span class="brand-mark">{{ icons.icon("moon", 22) }}</span>
+      <span class="brand-word">lunara</span>
+    </a>
+    <div class="onboarding-intro-copy">
+      <p class="eyebrow">Seu espaço começa aqui</p>
+      <h1>Um ciclo não é uma regra.<br><em>É a sua história.</em></h1>
+      <p>Vamos ajustar o Lunara ao seu corpo. Você pode mudar tudo depois, quantas vezes precisar.</p>
+      <ul class="onboarding-list">
+        <li><span>{{ icons.icon("moon", 16) }}</span> Previsões de período, ovulação e TPM</li>
+        <li><span>{{ icons.icon("heart", 16) }}</span> Registro de humor, sintomas e bem-estar</li>
+        <li><span>{{ icons.icon("chart", 16) }}</span> Insights que ficam mais precisos com o tempo</li>
+        <li><span>{{ icons.icon("shield", 16) }}</span> Privacidade de verdade, no seu banco</li>
+      </ul>
+    </div>
+    <p class="onboarding-foot">Você no controle. Sempre.</p>
+  </section>
+
+  <section class="onboarding-panel">
+    <div class="onboarding-card card">
+      <div class="onboarding-progress">
+        <div class="progress-track"><span class="progress-fill" data-progress></span></div>
+        <span class="progress-label" data-progress-label>Passo 1 de 3</span>
+      </div>
+
+      <form method="post" class="onboarding-form" data-onboarding novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+        <div class="onboarding-step" data-step="1">
+          <p class="eyebrow">Primeiro, você</p>
+          <h2>Como podemos te chamar?</h2>
+          <p class="step-sub">É assim que vamos falar com você por aqui.</p>
+
+          <label class="field">
+            <span class="field-label">Seu nome</span>
+            <span class="input-wrap">
+              {{ icons.icon("user", 18) }}
+              <input type="text" name="name" value="{{ form.get('name', '') }}" placeholder="Seu primeiro nome" required maxlength="120" autofocus>
+            </span>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Data de nascimento <small>(opcional)</small></span>
+            <span class="input-wrap">
+              {{ icons.icon("calendar", 18) }}
+              <input type="date" name="birth_date" value="{{ birth or '' }}" max="{{ today().isoformat() }}">
+            </span>
+          </label>
+        </div>
+
+        <div class="onboarding-step" data-step="2" hidden>
+          <p class="eyebrow">Seu ciclo</p>
+          <h2>Quando foi sua última menstruação?</h2>
+          <p class="step-sub">O primeiro dia de fluxo. Se não lembrar exatamente, escolha a melhor aproximação.</p>
+
+          <label class="field">
+            <span class="field-label">Primeiro dia da última menstruação</span>
+            <span class="input-wrap">
+              {{ icons.icon("droplet", 18) }}
+              <input type="date" name="last_period_start" value="{{ form.get('last_period_start', '') }}" required max="{{ today().isoformat() }}">
+            </span>
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">Duração média do ciclo</span>
+              <span class="input-wrap">
+                <select name="cycle_length">
+                  {% for value in range(21, 46) %}
+                  <option value="{{ value }}" {{ 'selected' if form.get('cycle_length', '28')|string == value|string }}>{{ value }} dias</option>
+                  {% endfor %}
+                </select>
+              </span>
+            </label>
+            <label class="field">
+              <span class="field-label">Duração da menstruação</span>
+              <span class="input-wrap">
+                <select name="period_length">
+                  {% for value in range(2, 11) %}
+                  <option value="{{ value }}" {{ 'selected' if form.get('period_length', '5')|string == value|string }}>{{ value }} dias</option>
+                  {% endfor %}
+                </select>
+              </span>
+            </label>
+          </div>
+          <p class="field-hint">Não sabe? Deixe 28 e 5. O app ajusta conforme você registra.</p>
+        </div>
+
+        <div class="onboarding-step" data-step="3" hidden>
+          <p class="eyebrow">Seu objetivo</p>
+          <h2>O que você quer acompanhar?</h2>
+          <p class="step-sub">Isso ajusta o destaque das suas telas. Você pode mudar depois.</p>
+
+          <div class="goal-grid">
+            {% for key, label, emoji, desc in goals %}
+            <label class="goal-option">
+              <input type="radio" name="goal" value="{{ key }}" {{ 'checked' if form.get('goal', 'ciclo') == key }}>
+              <span class="goal-emoji">{{ icons.icon(emoji, 18) }}</span>
+              <span class="goal-text"><strong>{{ label }}</strong><small>{{ desc }}</small></span>
+              <span class="goal-check">{{ icons.icon("check", 14) }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="onboarding-actions">
+          <button type="button" class="btn btn-ghost" data-prev hidden>{{ icons.icon("arrow-left", 18) }} Voltar</button>
+          <span class="spacer"></span>
+          <button type="button" class="btn btn-primary" data-next>Continuar {{ icons.icon("arrow-right", 18) }}</button>
+          <button type="submit" class="btn btn-primary" data-submit hidden>Começar meu ciclo {{ icons.icon("sparkles", 18) }}</button>
+        </div>
+      </form>
+    </div>
+    <p class="onboarding-privacy">{{ icons.icon("lock", 14) }} Suas informações ficam no seu próprio banco de dados.</p>
+  </section>
+</div>
+{% endblock %}

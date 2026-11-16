@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}{{ article.title }} · Lunara{% endblock %}
+
+{% block content %}
+<article class="article-detail">
+  <a class="back-link" href="{{ url_for('views.articles') }}">{{ icons.icon("arrow-left", 17) }} Biblioteca</a>
+  <header class="article-header">
+    <div class="article-header-meta">
+      <span class="pill soft">{{ article.category }}</span>
+      <span class="muted-text">{{ article.read_time }} de leitura</span>
+    </div>
+    <h1>{{ article.title }}</h1>
+    <p>{{ article.excerpt }}</p>
+  </header>
+
+  <div class="article-cover article-cover-lg cover-{{ article.slug|length % 6 }}">
+    {{ icons.icon(article.emoji, 48) }}
+  </div>
+
+  <div class="article-layout">
+    <div class="prose">
+      {{ article.body|safe }}
+      <div class="article-disclaimer">
+        {{ icons.icon("shield", 18) }}
+        <p>Este conteúdo é informativo e não substitui uma consulta profissional. Se algo no seu corpo parece diferente, procure atendimento de saúde.</p>
+      </div>
+    </div>
+    <aside class="article-aside">
+      <section class="card aside-card">
+        <div class="card-head compact"><h2>Continue lendo</h2></div>
+        {% for item in related %}
+        <a class="related-article" href="{{ url_for('views.article', slug=item.slug) }}">
+          {{ icons.icon(item.emoji, 20) }}
+          <span><strong>{{ item.title }}</strong><small>{{ item.read_time }}</small></span>
+        </a>
+        {% else %}
+        <p class="muted-text">Você já leu tudo desta categoria.</p>
+        {% endfor %}
+      </section>
+      <section class="card aside-card">
+        <span class="quote-mark">“</span>
+        <p>Informação boa é a que te deixa mais tranquila para conversar com quem cuida de você.</p>
+        <small>Lunara</small>
+      </section>
+    </aside>
+  </div>
+</article>
+{% endblock %}

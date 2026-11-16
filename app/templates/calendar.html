@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Calendário · Lunara{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Seu mapa menstrual</p>
+    <h1>Calendário</h1>
+    <p class="page-sub">Fluxo real, previsões e janela fértil — tudo no mesmo lugar.</p>
+  </div>
+  <div class="calendar-head-actions">
+    <a class="btn btn-primary btn-sm" href="{{ url_for('views.new_cycle') }}">{{ icons.icon("plus", 16) }} Novo ciclo</a>
+    <div class="month-switch">
+      <a class="icon-btn" href="{{ url_for('views.calendar_view', mes=prev_month.strftime('%Y-%m')) }}" aria-label="Mês anterior">{{ icons.icon("chevron-left", 18) }}</a>
+      <strong>{{ month|month_name|capitalize }} <span>{{ year }}</span></strong>
+      <a class="icon-btn" href="{{ url_for('views.calendar_view', mes=next_month.strftime('%Y-%m')) }}" aria-label="Próximo mês">{{ icons.icon("chevron-right", 18) }}</a>
+    </div>
+  </div>
+</section>
+
+<div class="calendar-layout">
+  <section class="card calendar-card">
+    <div class="calendar-toolbar">
+      <div class="legend-inline">
+        <span><i class="legend-dot actual"></i> Fluxo</span>
+        <span><i class="legend-dot predicted"></i> Previsto</span>
+        <span><i class="legend-dot fertile"></i> Fértil</span>
+        <span><i class="legend-dot ovulation"></i> Ovulação</span>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('views.calendar_view') }}">Hoje</a>
+    </div>
+
+    <div class="calendar-weekdays" aria-hidden="true">
+      {% for name in ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"] %}
+      <span>{{ name }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="calendar-grid">
+      {% for week in weeks %}
+        {% for item in week %}
+        {% set kind = item.status.kind %}
+        <a class="cal-day {{ 'out-month' if not item.in_month }} {{ 'is-today' if item.is_today }} kind-{{ kind }}"
+           href="{{ url_for('views.log_day', day_value=item.date.isoformat()) }}"
+           {% if item.date > today() %}aria-disabled="true"{% endif %}>
+          <span class="cal-top">
+            <span class="cal-num">{{ item.date.day }}</span>
+            {% if item.log and (item.log.symptom_list() or item.log.mood_list()) and kind == 'none' %}
+            <span class="cal-note-dot"></span>
+            {% endif %}
+          </span>
+          {% if kind != 'none' %}
+          <span class="cal-status">{{ item.status.short }}</span>
+          {% elif item.log and item.log.symptom_list() %}
+          <span class="cal-status muted">sintoma</span>
+          {% endif %}
+        </a>
+        {% endfor %}
+      {% endfor %}
+    </div>
+
+    <div class="calendar-foot">
+      <span>{{ icons.icon("sparkles", 15) }} Toque em qualquer dia para registrar ou editar.</span>
+      <span class="muted-text">Previsões são estimativas, não garantias.</span>
+    </div>
+  </section>
+
+  <aside class="calendar-aside">
+    <section class="card aside-card">
+      <div class="card-head compact">
+        <h2>Resumo de {{ month|month_name }}</h2>
+      </div>
+      <div class="summary-stats">
+        <div><strong>{{ month_logs|length }}</strong><span>registros</span></div>
+        <div><strong>{{ flow_days }}</strong><span>dias de fluxo</span></div>
+        <div><strong>{{ symptom_days }}</strong><span>dias com sintomas</span></div>
+      </div>
+      <div class="divider"></div>
+      <div class="cycle-mini">
+        <span class="stat-icon rose">{{ icons.icon("moon", 17) }}</span>
+        <div>
+          <strong>{{ stats.regularity }}</strong>
+          <small>Ciclo médio de {{ stats.avg_cycle }} dias · {{ stats.avg_period }} dias de fluxo</small>
+        </div>
+      </div>
+      {% if stats.current_start %}
+      <div class="progress-line"><span style="width: {{ (stats.cycle_progress * 100)|round|int }}%"></span></div>
+      <p class="muted-text small">Dia {{ stats.cycle_day }} do ciclo atual, iniciado em {{ stats.current_start|date_pt }}.</p>
+      {% endif %}
+    </section>
+
+    <section class="card aside-card">
+      <div class="card-head compact">
+        <h2>Legenda</h2>
+      </div>
+      <ul class="legend-list">
+        <li><i class="legend-dot actual"></i><span><strong>Fluxo registrado</strong><small>Dias em que você anotou sangramento.</small></span></li>
+        <li><i class="legend-dot predicted"></i><span><strong>Período previsto</strong><small>Estimativa baseada no seu histórico.</small></span></li>
+        <li><i class="legend-dot fertile"></i><span><strong>Janela fértil</strong><small>Maior chance de gravidez.</small></span></li>
+        <li><i class="legend-dot ovulation"></i><span><strong>Ovulação estimada</strong><small>Ponto central da janela fértil.</small></span></li>
+        <li><i class="legend-dot pms"></i><span><strong>TPM prevista</strong><small>Os dias antes do período.</small></span></li>
+      </ul>
+    </section>
+
+    <section class="card aside-card">
+      <div class="card-head compact">
+        <h2>Próximas previsões</h2>
+      </div>
+      <div class="prediction-list">
+        {% for item in stats.predicted_periods[:3] %}
+        <div class="prediction-row">
+          <span class="prediction-day">{{ item.start.day }}</span>
+          <span><strong>{{ item.start|date_pt }}</strong><small>Menstruação prevista</small></span>
+        </div>
+        {% else %}
+        <p class="empty-note">Ainda sem previsões. Registre seu período.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

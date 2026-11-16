@@ -1,0 +1,15 @@
+/* Lunara — folha principal. As camadas ficam separadas por responsabilidade. */
+@import url("base.css");
+@import url("pages.css");
+@import url("auth.css");
+
+/* O atributo hidden precisa vencer displays declarados pelos componentes. */
+[hidden] {
+  display: none !important;
+}
+
+.flash.is-leaving {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}

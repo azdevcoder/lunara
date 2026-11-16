@@ -1,0 +1,37 @@
+{% extends "auth_base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Entrar · Lunara{% endblock %}
+
+{% block content %}
+<div class="auth-form-head">
+  <p class="eyebrow">Bem-vinda de volta</p>
+  <h2>Entre no seu espaço</h2>
+  <p>Seu ciclo, seus registros e seus padrões esperando por você.</p>
+</div>
+
+<form method="post" class="auth-form" autocomplete="on">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+
+  <label class="field">
+    <span class="field-label">E-mail</span>
+    <span class="input-wrap">
+      {{ icons.icon("mail", 18) }}
+      <input type="email" name="email" value="{{ email }}" placeholder="voce@email.com" required autofocus autocomplete="email">
+    </span>
+  </label>
+
+  <label class="field">
+    <span class="field-label">Senha</span>
+    <span class="input-wrap">
+      {{ icons.icon("lock", 18) }}
+      <input type="password" name="password" placeholder="Sua senha" required autocomplete="current-password" data-password>
+      <button type="button" class="input-action" data-toggle-password aria-label="Mostrar senha">{{ icons.icon("eye", 17) }}</button>
+    </span>
+  </label>
+
+  <button type="submit" class="btn btn-primary btn-block">Entrar {{ icons.icon("arrow-right", 18) }}</button>
+</form>
+
+<p class="auth-switch">Primeira vez por aqui? <a href="{{ url_for('auth.register') }}">Criar meu espaço</a></p>
+{% endblock %}

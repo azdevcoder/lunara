@@ -40,3 +40,12 @@ class Config:
     SESSION_COOKIE_SAMESITE = "Lax"
     PERMANENT_SESSION_LIFETIME = 60 * 60 * 24 * 60  # 60 dias
     MAX_CONTENT_LENGTH = 4 * 1024 * 1024
+
+    # Produção: atrás de proxy HTTPS (nginx/tailscale), definir TRUST_PROXY=1
+    # e SESSION_COOKIE_SECURE=1 no .env.
+    TRUST_PROXY = os.environ.get("TRUST_PROXY", "0") in {"1", "true", "True"}
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "0") in {"1", "true", "True"}
+    PREFERRED_URL_SCHEME = "https" if SESSION_COOKIE_SECURE else "http"
+
+    LOGIN_MAX_ATTEMPTS = int(os.environ.get("LOGIN_MAX_ATTEMPTS", "5"))
+    LOGIN_WINDOW_SECONDS = int(os.environ.get("LOGIN_WINDOW_SECONDS", "900"))

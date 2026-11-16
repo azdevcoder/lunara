@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Novo ciclo · Lunara{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Novo ciclo</p>
+    <h1>Comece um novo ciclo</h1>
+    <p class="page-sub">Informe os três dados e o Lunara calcula o calendário, a ovulação e a janela fértil.</p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('views.calendar_view') }}">{{ icons.icon("arrow-left", 16) }} Voltar ao calendário</a>
+</section>
+
+<div class="cycle-layout">
+  <section class="card cycle-form-card">
+    <div class="card-head">
+      <div><p class="eyebrow">Só o essencial</p><h2>Dados do ciclo</h2></div>
+    </div>
+    <form method="post" class="cycle-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+      <label class="field">
+        <span class="field-label">Primeiro dia da última menstruação</span>
+        <input type="date" name="start" value="{{ form.start }}" max="{{ today().isoformat() }}" required>
+        <span class="field-hint">O dia em que o fluxo começou. Pode ser hoje ou uma data recente.</span>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Dias de menstruação</span>
+          <select name="period_length">
+            {% for value in range(2, 11) %}
+            <option value="{{ value }}" {{ 'selected' if form.period_length|string == value|string }}>{{ value }} dias</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">Duração média do ciclo</span>
+          <select name="cycle_length">
+            {% for value in range(21, 46) %}
+            <option value="{{ value }}" {{ 'selected' if form.cycle_length|string == value|string }}>{{ value }} dias</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      <p class="field-hint cycle-form-note">{{ icons.icon("shield", 14) }} Os dias de fluxo são preenchidos no calendário sem apagar registros que você já fez. As previsões são estimativas.</p>
+
+      <div class="cycle-actions">
+        <button class="btn btn-primary" type="submit">{{ icons.icon("check", 17) }} Registrar novo ciclo</button>
+        <a class="btn btn-ghost" href="{{ url_for('views.calendar_view') }}">Cancelar</a>
+      </div>
+    </form>
+  </section>
+
+  <aside class="card cycle-preview" aria-live="polite">
+    <p class="eyebrow">Prévia dos cálculos</p>
+    <h2>Como o calendário fica</h2>
+    <div class="cycle-preview-list">
+      <div><span>Seu fluxo vai até</span><strong id="preview-flow">—</strong></div>
+      <div><span>Próximo período</span><strong id="preview-next">—</strong></div>
+      <div><span>Ovulação estimada</span><strong id="preview-ovulation">—</strong></div>
+      <div><span>Janela fértil</span><strong id="preview-fertile">—</strong></div>
+    </div>
+    <p class="field-hint">A prévia usa os dados acima. Você pode ajustar tudo depois em Perfil ou editando um dia no calendário.</p>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+  const startInput = document.querySelector('input[name="start"]');
+  const periodSelect = document.querySelector('select[name="period_length"]');
+  const cycleSelect = document.querySelector('select[name="cycle_length"]');
+  const out = {
+    flow: document.getElementById("preview-flow"),
+    next: document.getElementById("preview-next"),
+    ovulation: document.getElementById("preview-ovulation"),
+    fertile: document.getElementById("preview-fertile"),
+  };
+
+  const fmt = (date) =>
+    date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
+
+  const addDays = (iso, days) => {
+    const [year, month, day] = iso.split("-").map(Number);
+    return new Date(year, month - 1, day + days);
+  };
+
+  const update = () => {
+    const iso = startInput.value;
+    if (!iso) {
+      Object.values(out).forEach((el) => (el.textContent = "—"));
+      return;
+    }
+    const period = Number(periodSelect.value) || 5;
+    const cycle = Number(cycleSelect.value) || 28;
+    const flowEnd = addDays(iso, period - 1);
+    const next = addDays(iso, cycle);
+    const ovulation = addDays(iso, cycle - 14);
+    const fertileStart = addDays(iso, cycle - 19);
+    const fertileEnd = addDays(iso, cycle - 13);
+
+    out.flow.textContent = `${fmt(addDays(iso, 0))} – ${fmt(flowEnd)}`;
+    out.next.textContent = fmt(next);
+    out.ovulation.textContent = fmt(ovulation);
+    out.fertile.textContent = `${fmt(fertileStart)} – ${fmt(fertileEnd)}`;
+  };
+
+  [startInput, periodSelect, cycleSelect].forEach((el) => el.addEventListener("change", update));
+  startInput.addEventListener("input", update);
+  update();
+})();
+</script>
+{% endblock %}

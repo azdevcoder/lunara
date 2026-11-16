@@ -1,0 +1,9 @@
+<div class="error-card">
+  <span class="error-code">{{ code }}</span>
+  <h1>{{ title }}</h1>
+  <p>{{ message }}</p>
+  <div class="error-actions">
+    <a class="btn btn-primary" href="{{ url_for('views.home') }}">Voltar para o início</a>
+    <a class="btn btn-ghost" href="{{ url_for('views.articles') }}">Ver biblioteca</a>
+  </div>
+</div>
