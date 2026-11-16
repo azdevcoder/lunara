@@ -1,0 +1,14 @@
+[Unit]
+Description=Lunara (gunicorn)
+After=network.target mysql.service mariadb.service
+
+[Service]
+User=lunara
+Group=lunara
+WorkingDirectory=/opt/lunara
+ExecStart=/opt/lunara/.venv/bin/gunicorn --workers 2 --bind 127.0.0.1:8000 --access-logfile - --error-logfile -
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
